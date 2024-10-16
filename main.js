@@ -13,7 +13,7 @@ document.body.appendChild(canvas);
 
 let backgroundImage, spaceshipImage, BulletImage, EnemyImgae, gameOverImage; 
 let gameOver = false //true = over, false =weiter;
-
+let score = 0;
 let spaceshipImageX = (canvas.width/2) - 16;
 let spaceshipImageY = canvas.height-64;
 let enemyList=[];
@@ -24,11 +24,26 @@ function Bullet(){
     this.init = function(){
         this.x = spaceshipImageX+26;
         this.y = spaceshipImageY;
+        this.alive = true;
         BulletList.push(this);
     };
     this.update = function(){
         this.y -= 7;
     };
+
+    this.checkHit = function(){
+        for(let i = 0; i<enemyList.length; i++){
+            if(this.y <= enemyList[i].y
+                && this.x>=enemyList[i].x 
+                && this.x <= enemyList[i].x+50){
+                score++;
+                this.alive = false;
+                enemyList.splice(i, 1);
+                //
+            }
+        }
+        
+    }
 }
 function generateRandomValue(min, max){
     let randomNum = Math.floor(Math.random()*(max-min+1))+min;
@@ -114,22 +129,33 @@ function update(){
     }
 
     for(let i = 0; i< BulletList.length; i++){
-        BulletList[i].update();
+        if(BulletList[i].alive){
+            BulletList[i].update();
+            BulletList[i].checkHit();  
+        }
+        
     }
     for(let i = 0; i< enemyList.length; i++){
-        enemyList[i].update();
+        enemyList[i].update();  
     }
 }
 function render(){
     ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
     ctx.drawImage(spaceshipImage, spaceshipImageX, spaceshipImageY);
-    
+    ctx.fillText(`Score: ${score}` ,20,20);
+    ctx.fillStyle='white';
+    ctx.font = '25px serif';
     for(let i = 0; i<BulletList.length; i++){
-        ctx.drawImage(BulletImage, BulletList[i].x, BulletList[i].y);
+        if(BulletList[i].alive){
+            ctx.drawImage(BulletImage, BulletList[i].x, BulletList[i].y);
+        }
+        
     }
     for(let i = 0; i< enemyList.length; i++){
         ctx.drawImage(EnemyImgae,enemyList[i].x, enemyList[i].y)
     }
+
+
 }
 
 function main(){
@@ -138,7 +164,7 @@ function main(){
         render();
         requestAnimationFrame(main);
     }else{
-        ctx.drawImage(gameOverImage,10,10,380,380);
+        ctx.drawImage(spaceshipImage,20,20,300,300);
     }
     
         
